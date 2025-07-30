@@ -38,16 +38,16 @@ app.post('/api/shorturl', async (req, res, next) => {
   if(!isValidURL(data.url)) return res.send({error: 'invalid url'})
   
   const existing = await ShortUrl.findOne({full: data.url});
-  console.log('Url exists:', existing.full)
 
   if(existing){
+    console.log('Url exists:', existing.full)
+
     return res.send({
       original_url: existing.full,
       short_url: existing.short
     });
   }
-
-  console.log('Not supposed to log')
+  
   await ShortUrl.create({full: data.url})
   const shortData = await ShortUrl.findOne({full: data.url})
   console.log(shortData)
