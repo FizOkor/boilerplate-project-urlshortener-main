@@ -7,7 +7,8 @@ const app = express();
 const bodyParser = require('body-parser')
 const ShortUrl = require('./models/shortUrl')
 
-app.use(bodyParser.urlencoded({extended: false}))
+// app.use(bodyParser.urlencoded({extended: false}))
+app.use(express.urlencoded({ extended: false }));
 
 mongoose.connect(process.env.MONGO_URI);
 
@@ -58,9 +59,9 @@ function isValidURL(input) {
 app.post('/api/shorturl', async (req, res, next) => {
   const data = req.body;
   const { hostname } = new URL(data.url);
-  const isValid = await isValidURL(hostname)
+  const isValid = await isValidURL(data.url)
 
-  if(!isValid) return res.send({error: 'invalid url'})
+  if(!isValid) return res.json({error: 'invalid url'})
   
   const existing = await ShortUrl.findOne({full: data.url});
 
@@ -87,9 +88,10 @@ app.get('/api/shorturl/:short_url', async (req, res) => {
   const urlData = await ShortUrl.findOne({short: req.params.short_url});
   console.log("finding short url:", req.params.short_url)
 
-  if(urlData === null) return res.sendStatus(404)
+  if(urlData === null) return res.json({"error":"No short URL found for the given input"})
 
   urlData.clicks++;
+  urlData.save()
   res.redirect(urlData.full);
 })
 
