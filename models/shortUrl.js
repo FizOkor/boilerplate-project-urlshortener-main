@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 const shortUrlSchema = mongoose.Schema({
     full:{
@@ -7,9 +8,8 @@ const shortUrlSchema = mongoose.Schema({
         required: true,
     },
     short: {
-        type: String,
-        required: true,
-        default: () => Math.random().toString(36).substring(2, 8)
+        type: Number,
+        required: true
     },
     clicks: {
         type: Number,
@@ -17,5 +17,7 @@ const shortUrlSchema = mongoose.Schema({
         default: 0
     }
 })
+
+shortUrlSchema.plugin(AutoIncrement, { inc_field: 'short' });
 
 module.exports = mongoose.model('ShortUrl', shortUrlSchema);

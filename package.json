@@ -13,6 +13,7 @@
     "express": "^4.17.1",
     "mongodb": "^6.18.0",
     "mongoose": "^8.16.5",
+    "mongoose-sequence": "^6.0.1",
     "nodemon": "^3.1.10"
   },
   "license": "MIT"
