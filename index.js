@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose')
+const dns = require('dns');
 const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser')
@@ -27,15 +28,39 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
-function isValidURL(url) {
-  const urlRegex = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/[\w-._~:/?#\[\]@!$&'()*+,;=]*)?$/;
-  return urlRegex.test(url);
+function isValidURL(input) {
+  return new Promise((resolve) => {
+    let url = input.trim();
+
+    // Add protocol if missing
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'http://' + url;
+    }
+
+    let hostname;
+    try {
+      hostname = new URL(url).hostname;
+    } catch (err) {
+      return resolve(false);
+    }
+
+    dns.lookup(hostname, (err) => {
+      if (err) {
+        console.error('DNS lookup failed:', err);
+        return resolve(false);
+      }
+      resolve(true);
+    });
+  });
 }
+
 
 app.post('/api/shorturl', async (req, res, next) => {
   const data = req.body;
+  const { hostname } = new URL(data.url);
+  const isValid = await isValidURL(hostname)
 
-  if(!isValidURL(data.url)) return res.send({error: 'invalid url'})
+  if(!isValid) return res.send({error: 'invalid url'})
   
   const existing = await ShortUrl.findOne({full: data.url});
 
